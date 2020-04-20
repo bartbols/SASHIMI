@@ -15,7 +15,9 @@ function [Ps,Ns,ts,t,N] = fit_spline( P,n )
 
 % The first and last point should be the same. If this is not the case, add
 % the first point to the end of the array.
+flag = false;
 if ~isequal(P(1,:),P(end,:))
+    flag = true;
     P = [P;P(1,:)];
 end
 
@@ -41,8 +43,8 @@ if nargout > 1
     Ns(:,1) = -fnval(fnder(py),linspace(0,max(t),n));
     Ns(:,2) =  fnval(fnder(px),linspace(0,max(t),n));
     
-        % Normalize to unit vector.
-        Ns = Ns ./ (sqrt(sum(Ns.^2,2))*[1 1]);
+    % Normalize to unit vector.
+    Ns = Ns ./ (sqrt(sum(Ns.^2,2))*[1 1]);
     if nargout > 4
         % Also calculate the normal vectors at the original point
         % locations.
@@ -51,6 +53,10 @@ if nargout > 1
         
         % normalize to unit vector
         N = N ./ (sqrt(sum(N.^2,2))*[1 1]);
+        if flag == true
+            N = N(1:end-1,:);
+            t = t(1:end-1);
+        end
     end
 end
 

@@ -75,13 +75,13 @@ else
 
 end
 img1_reg = NaN(size(img2));
-D        = NaN([size(img2),2]);
-[D2,I_reg] = imregdemons(img1(sel_y,sel_x),img2(sel_y,sel_x),N,...
+% D        = NaN([size(img2),2]);
+[D,I_reg] = imregdemons(img1(sel_y,sel_x),img2(sel_y,sel_x),N,...
     'AccumulatedFieldSmoothing',afs,...
     'PyramidLevels',pl,...
     'DisplayWaitbar',dw);
 img1_reg(sel_y,sel_x,:) = I_reg;
-D(sel_y,sel_x,:) = D2;
+% D(sel_y,sel_x,:) = D2;
 
 if ~isempty(label1)
     % Estimate the transformed label. label1_tf is label 1 transformed to
@@ -109,8 +109,8 @@ end
 % Sub-functions
     function pnew = get_new_location(pts)        
             d = zeros(size(pts));
-            d(:,1) = interp2(xvec,yvec,D(:,:,1),pts(:,1),pts(:,2),method); % x displacement in pixel coordinates
-            d(:,2) = interp2(xvec,yvec,D(:,:,2),pts(:,1),pts(:,2),method); % y displacement in pixel coordinates
+            d(:,1) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,1),pts(:,1),pts(:,2),method); % x displacement in pixel coordinates
+            d(:,2) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,2),pts(:,1),pts(:,2),method); % y displacement in pixel coordinates
             % Update the new position vectors. The displacement field
             % preditect by imregdemons is in pixel coordinates, so it needs
             % to be converted back to image coordinates (flipped x/y axis,
