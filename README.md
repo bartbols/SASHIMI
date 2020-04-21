@@ -5,7 +5,7 @@ SASHIMI Segmentation stands for
 
   Semi-
   Automated
-  Simple
+  Supervised
   Human-
   Interactive
   Multislice
