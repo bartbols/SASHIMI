@@ -21,3 +21,6 @@ SEGMENTATION
   The standalone version was compiled in Windows using Matlab 2019b.
   The standalone executable does not require Matlab to be installed, but does require Matlab Runtime R2019b 9.7, which can be downloaded for free here:
   https://au.mathworks.com/products/compiler/matlab-runtime.html
+
+  Tutorial videos for SASHIMI Segmentation can be found on YouTube:
+  https://www.youtube.com/playlist?list=PLCgxZJMGTw9c7BVhrIMy-jtjIMyiX8leH
