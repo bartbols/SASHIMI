@@ -1,20 +1,26 @@
 function varargout = register_slices(img1,img2,varargin)
 %REGISTER_SLICES Registers two 2D images and then applies the estimated
-%transformation field to transform the label of image 1 to image 2. This
+%transformation field to transform the points of image 1 to image 2. This
 %function uses Matlab's built-in demons registration (see doc imregdemons
 %for details). The first input is the moving image and the second input
-%the fixed image. The label should be defined on the moving image.
+%the fixed image.
 %
 % Bart Bolsterlee, Neuroscience Research Australia
 % March 2020
+%
+% Edits:
+% 24/4, BB: removed option to transform label field.
+% 24/4, BB: shifted coordinate system by half a pixel so that xvec/yvec
+% indicate the center of a pixel (was edge of the pixel)
 
 %% Parse inputs
 p = inputParser;
 addRequired(p,'img1')
 addRequired(p,'img2')
 % addRequired(p,'label1')
-addParameter(p,'label1',[])
+% addParameter(p,'label1',[])
 addParameter(p,'points',[])
+
 % Registration settings
 addParameter(p,'N',100,@isscalar)
 addParameter(p,'AccumulatedFieldSmoothing',1.5)
@@ -34,12 +40,12 @@ pl      = p.Results.PyramidLevels;
 dw      = p.Results.DisplayWaitbar;
 crop    = p.Results.crop;
 padding = p.Results.padding;
-label1  = p.Results.label1; % label defined on the moving image
+% label1  = p.Results.label1; % label defined on the moving image
 points  = p.Results.points; % points in fixed image coordinates
 spacing = p.Results.spacing; % pixel spacing in x and y direction
 method  = p.Results.method; % interpolation method
 
-label1_tf = [];
+% label1_tf = [];
 points_tf = [];
 %% Register images
 
@@ -50,9 +56,10 @@ points_tf = [];
 %                dimensions.
 % img1_reg     : warped moving image (should match the fixed image)
 
+% Build up vector of x and y location of pixel centres.
 imdim = size(img2);
-xvec = (0 : imdim(2)-1) * spacing(2);
-yvec = (0 : imdim(1)-1) * spacing(1);
+xvec = (0.5 : imdim(2)-0.5) * spacing(2);
+yvec = (0.5 : imdim(1)-0.5) * spacing(1);
 
 if crop == true && ~isempty(points)
     % Register only regions in which points are
@@ -83,11 +90,13 @@ img1_reg = NaN(size(img2));
 img1_reg(sel_y,sel_x,:) = I_reg;
 % D(sel_y,sel_x,:) = D2;
 
-if ~isempty(label1)
-    % Estimate the transformed label. label1_tf is label 1 transformed to
-    % match image 2.
-    label1_tf = imwarp(label1,D,'nearest');
-end
+% if ~isempty(label1)
+%     % Estimate the transformed label. label1_tf is label 1 transformed to
+%     % match image 2.
+%     % Note: this is probably incorrect - don't trust the label1_tf. It is
+%     % currently (24/4/2020) not used in SASHIMI.
+%     label1_tf = imwarp(label1,D,'nearest');
+% end
 
 % Transform the points
 if ~isempty(points)
@@ -112,7 +121,7 @@ end
             d(:,1) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,1),pts(:,1),pts(:,2),method); % x displacement in pixel coordinates
             d(:,2) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,2),pts(:,1),pts(:,2),method); % y displacement in pixel coordinates
             % Update the new position vectors. The displacement field
-            % preditect by imregdemons is in pixel coordinates, so it needs
+            % predicted by imregdemons is in pixel coordinates, so it needs
             % to be converted back to image coordinates (flipped x/y axis,
             % and multiplied by pixel size).
             pnew = pts + d.*spacing([2 1]);        
@@ -121,10 +130,10 @@ end
 if nargout > 0
     varargout{1} = img1_reg;
     if nargout > 1
-        varargout{2} = label1_tf;
-        if nargout > 2
-            varargout{3} = points_tf;
-        end
+        varargout{2} = points_tf;
+%         if nargout > 2
+%             varargout{3} = label1_tf;
+%         end
     end
 end
 

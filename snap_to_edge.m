@@ -7,6 +7,8 @@ function [newpoints,Gmag,Gdir] = snap_to_edge(img,points,varargin)
 % maxd    : maximum distance to move points (in mm). Default: 1
 % sigma   : standard deviation of the gaussian image filter. Default: 1
 % method  : interpolation method. Default: 'linear'.
+% direction: direction in which points can be moved: 'normal' (in direction
+%            normal to curve) or 'gradient' (orthogonal to the image gradient)
 %
 % Bart Bolsterlee
 % Neuroscience Research Australia
@@ -20,16 +22,17 @@ addParameter(p,'maxd',1,@isscalar)
 addParameter(p,'spacing',[1 1])
 addParameter(p,'sigma',1,@(x) isscalar(x) || isempty(x))
 addParameter(p,'method','linear')
+addParameter(p,'direction','gradient')
 parse(p,img,points,varargin{:});
 
 method  = p.Results.method; % interpolation method
 spacing = p.Results.spacing;
 maxd    = p.Results.maxd;
 sigma   = p.Results.sigma;
+direction = p.Results.direction;
 
-%%
-
-
+PlotFlag = false; % Set to true for diagnostics purposes only.
+%% Crop image
 % Build up x and y-vector of image.
 imdim = size(img);
 xvec = (0 : imdim(2)-1) * spacing(2);
@@ -59,19 +62,30 @@ if isempty(sigma)
     Ifilt = img(sel_y,sel_x);
 else
     Ifilt = imgaussfilt(img(sel_y,sel_x),sigma);
-end
-    
+end    
 [Gmag,Gdir] = imgradient(Ifilt);
+
+%%
 
 n = 1001; % sample n points along the direction vector
 d = linspace(-maxd,maxd,n)';
 newpoints = cell(size(points));
-% figure
+if PlotFlag == true
+    figure('Color','w')
+    subplot(1,2,1)
+    xlabel('Distance from original location (mm)')
+    ylabel('Gradient magnitude')
+end
 for i = 1 : numel(points)
     % Calculate edge vectors in the gradient direction.
     N = NaN(size(points{i}));
-    N(:,1) = interp2(xvec(sel_x),yvec(sel_y),-cosd(Gdir),points{i}(:,1),points{i}(:,2),method);
-    N(:,2) = interp2(xvec(sel_x),yvec(sel_y), sind(Gdir),points{i}(:,1),points{i}(:,2),method);
+    switch direction
+        case 'gradient'
+            N(:,1) = interp2(xvec(sel_x),yvec(sel_y),-cosd(Gdir),points{i}(:,1),points{i}(:,2),method);
+            N(:,2) = interp2(xvec(sel_x),yvec(sel_y), sind(Gdir),points{i}(:,1),points{i}(:,2),method);
+        case 'normal'
+            [~,~,~,~,N] = fit_spline(points{i});
+    end
     
     Nx = d*N(:,1)' + ones(n,1)*points{i}(:,1)';
     Ny = d*N(:,2)' + ones(n,1)*points{i}(:,2)';
@@ -107,17 +121,45 @@ for i = 1 : numel(points)
         max_value(j) = G_n(idx(j),j);
 
     end
-
-%     hold on
-%     plot(d,G_n,'k-')
-%     plot(d(idx),max_value,'ro')    
+    if PlotFlag == true
+        hold on
+        plot(d,G_n,'k-')
+        plot(d(idx),max_value,...
+            'o',...
+            'MarkerSize',8,...
+            'MarkerFaceColor','r',...
+            'MarkerEdgeColor','k')
+    end
     
     % Calculate new position
     newpoints{i} = points{i} + d(idx)*[1 1] .* N;    
 end
+
+% Plot for diagnostics:
+if PlotFlag == true
+    subplot(1,2,2)
+    image(xvec(sel_x),yvec(sel_y),Gmag)
+    colormap gray
+    hold on
+    for i = 1 : length(points)
+        h1 = plot(points{i}(:,1),points{i}(:,2),'-oy',...
+            'LineWidth',2,...
+            'MarkerFaceColor','y',...
+            'MarkerEdgeColor','none',...
+            'MarkerSize',6);
+        h2 = plot(newpoints{i}(:,1),newpoints{i}(:,2),'-or',...
+            'LineWidth',2,...
+            'MarkerFaceColor','none',...
+            'MarkerEdgeColor','r',...
+            'MarkerSize',7);
+    end
+    legend([h1 h2],{'before','after'});
+    axis equal off tight
+end
 if flag == true
     newpoints = newpoints{1};
 end
+
 
 end
 
