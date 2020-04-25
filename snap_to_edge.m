@@ -35,8 +35,8 @@ PlotFlag = false; % Set to true for diagnostics purposes only.
 %% Crop image
 % Build up x and y-vector of image.
 imdim = size(img);
-xvec = (0 : imdim(2)-1) * spacing(2);
-yvec = (0 : imdim(1)-1) * spacing(1);
+xvec = (0.5 : imdim(2)-0.5) * spacing(2);
+yvec = (0.5 : imdim(1)-0.5) * spacing(1);
 
 flag = false;
 if isnumeric(points)
@@ -48,7 +48,7 @@ end
 % Crop image to location where points are. This will speed up image
 % gradient calculation.
 % Note: this will give a problem if points are near the edge of the image...
-padding = 3*maxd;
+padding = 10*maxd;
 minx = min(cellfun(@(x) min(x(:,1)),points));
 maxx = max(cellfun(@(x) max(x(:,1)),points));
 miny = min(cellfun(@(x) min(x(:,2)),points));
