@@ -2,14 +2,18 @@ function [Ps,Ns,ts,t,N] = fit_spline( pos,varargin )
 %FIT_SPLINE uses csape to fit a closed curve around the points given
 %by P (n x 2 array).
 %
-% Optional input arguments as 'argument',<value> pairs:
+% INPUT
+% ----- Required inputs -----
+% pos    : nx2 array with x-y coordinates
+%
+% ----- Optional inputs -----
+% Optional input arguments are provided as 'argument',<value> pairs:
 % n:      Number of points on the spline curve . At these
 %          points, the normal vectors are calculated as well.
 %       
 % conds:  'periodic' or 'clamped'. End conditions for slopes. Use
 %         'periodic' to fit a closed curve. Default: periodic
 % 
-%
 % OUTPUT:
 % Vs : location of points sampled along the fitted curve
 % Ns : normal vectors of points sampled along the fitted curve

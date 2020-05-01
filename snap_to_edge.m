@@ -1,16 +1,28 @@
 function [newpoints,Gmag,Gdir] = snap_to_edge(img,points,varargin)
 %SNAP_TO_EDGE Snaps points to nearest edge of 2D image I.
+%
+% INPUT
+% ----- Required inputs -----
 % img     : 2D image
 % points  : n x 2 set of points or a cell array with n x 2 point sets.
-% Optional inputs (as 'argument',<value> pairs)
-% xvec    : vector with x-coordinates of image
-% yvec    : vector with y-coordinates of image
-% maxd    : maximum distance to move points (in mm). Default: 1
+%
+% ----- Optional inputs -----
+% Optional input arguments are provided as 'argument',<value> pairs:
+% xvec    : vector with x-coordinates of image (2nd dimension of image)
+% yvec    : vector with y-coordinates of image (1st dimension of image)
+% maxd    : maximum distance to move points (in same units as xvec/yvec). Default: 1
 % sigma   : standard deviation of the gaussian image filter. Default: 1
 % method  : interpolation method. Default: 'linear'.
 % direction: direction in which points can be moved: 'normal' (in direction
 %            normal to curve) or 'gradient' (orthogonal to the image gradient)
+%            Default: gradient
 %
+%
+% OUTPUT
+% newpoints: new 'snapped' point positions
+% Gmag     : gradient magnitude image
+% Gdir     : gradient direction image
+
 % Bart Bolsterlee
 % Neuroscience Research Australia
 % 17/04/2020
