@@ -26,7 +26,9 @@ addParameter(p,'N',100,@isscalar)
 addParameter(p,'AccumulatedFieldSmoothing',1.5)
 addParameter(p,'PyramidLevels',3)
 addParameter(p,'DisplayWaitbar',false)
-addParameter(p,'spacing',[1 1])
+% addParameter(p,'spacing',[1 1])
+addParameter(p,'xvec',[])
+addParameter(p,'yvec',[])
 addParameter(p,'method','linear')
 addParameter(p,'crop',false)
 addParameter(p,'padding',5,@isscalar)
@@ -40,13 +42,13 @@ pl      = p.Results.PyramidLevels;
 dw      = p.Results.DisplayWaitbar;
 crop    = p.Results.crop;
 padding = p.Results.padding;
-% label1  = p.Results.label1; % label defined on the moving image
 points  = p.Results.points; % points in fixed image coordinates
-spacing = p.Results.spacing; % pixel spacing in x and y direction
+% spacing = p.Results.spacing; % pixel spacing in x and y direction
+xvec    = p.Results.xvec;
+yvec    = p.Results.yvec;
 method  = p.Results.method; % interpolation method
 
 % label1_tf = [];
-points_tf = [];
 %% Register images
 
 % first input  : moving image
@@ -58,11 +60,16 @@ points_tf = [];
 
 % Build up vector of x and y location of pixel centres.
 imdim = size(img2);
-xvec = (0.5 : imdim(2)-0.5) * spacing(2);
-yvec = (0.5 : imdim(1)-0.5) * spacing(1);
+if isempty(xvec)
+    xvec = 1 : imdim(2);    
+end
+if isempty(yvec)
+    yvec = 1 : imdim(1);    
+end
+spacing = abs([yvec(2)-yvec(1) xvec(2)-xvec(1)]);
 
 if crop == true && ~isempty(points)
-    % Register only regions in which points are
+    % Register only regions in which points are provided.
     if iscell(points)
         minx = min(cellfun(@(x) min(x(:,1)),points));
         maxx = max(cellfun(@(x) max(x(:,1)),points));
@@ -81,25 +88,21 @@ else
     sel_y = true(size(yvec));
 
 end
+
+% Call imregdemons to calculate the displacement field D that maps from the
+% fixed to the moving image.
 img1_reg = NaN(size(img2));
-% D        = NaN([size(img2),2]);
 [D,I_reg] = imregdemons(img1(sel_y,sel_x),img2(sel_y,sel_x),N,...
     'AccumulatedFieldSmoothing',afs,...
     'PyramidLevels',pl,...
     'DisplayWaitbar',dw);
 img1_reg(sel_y,sel_x,:) = I_reg;
-% D(sel_y,sel_x,:) = D2;
 
-% if ~isempty(label1)
-%     % Estimate the transformed label. label1_tf is label 1 transformed to
-%     % match image 2.
-%     % Note: this is probably incorrect - don't trust the label1_tf. It is
-%     % currently (24/4/2020) not used in SASHIMI.
-%     label1_tf = imwarp(label1,D,'nearest');
-% end
 
 % Transform the points
-if ~isempty(points)
+if isempty(points)
+    points_tf = [];
+else    
     if iscell(points)
         % Cell array with multiple point sets is provided. Transform all 
         % points per cell.
@@ -118,13 +121,14 @@ end
 % Sub-functions
     function pnew = get_new_location(pts)        
             d = zeros(size(pts));
-            d(:,1) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,1),pts(:,1),pts(:,2),method); % x displacement in pixel coordinates
-            d(:,2) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,2),pts(:,1),pts(:,2),method); % y displacement in pixel coordinates
+            d(:,1) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,1),pts(:,1),pts(:,2),method,0); % x displacement in pixel coordinates
+            d(:,2) = interp2(xvec(sel_x),yvec(sel_y),D(:,:,2),pts(:,1),pts(:,2),method,0); % y displacement in pixel coordinates
+            
             % Update the new position vectors. The displacement field
             % predicted by imregdemons is in pixel coordinates, so it needs
             % to be converted back to image coordinates (flipped x/y axis,
             % and multiplied by pixel size).
-            pnew = pts + d.*spacing([2 1]);        
+            pnew = pts + d.*spacing([1 2]);        
     end
 %%
 if nargout > 0

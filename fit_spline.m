@@ -1,7 +1,16 @@
-function [Ps,Ns,ts,t,N] = fit_spline( P,n )
+function [Ps,Ns,ts,t,N] = fit_spline( pos,varargin )
 %FIT_SPLINE uses csape to fit a closed curve around the points given
-%by P (n x 2 array).The curve is then interpolated at n points. At these
-%locations, the normal vectors are calculated as well.
+%by P (n x 2 array).
+%
+% Optional input arguments as 'argument',<value> pairs:
+% n:      Number of points on the spline curve . At these
+%          points, the normal vectors are calculated as well.
+%       
+% conds:  'periodic' or 'clamped'. End conditions for slopes. Use
+%         'periodic' to fit a closed curve. Default: periodic
+% 
+%
+% OUTPUT:
 % Vs : location of points sampled along the fitted curve
 % Ns : normal vectors of points sampled along the fitted curve
 % t  : t-values of control points
@@ -12,26 +21,34 @@ function [Ps,Ns,ts,t,N] = fit_spline( P,n )
 % Neuroscience Research Australia
 % April 2020
 
+%% Parse inputs
+p = inputParser;
+addRequired(p,'pos')
+addParameter(p,'n',[])
+addParameter(p,'conds','periodic',@(x) any(strcmp(x,{'clamped','periodic'})))
+parse(p,pos,varargin{:});
+conds = p.Results.conds;
+n     = p.Results.n;
+%%
 
 % The first and last point should be the same. If this is not the case, add
 % the first point to the end of the array.
 flag = false;
-if ~isequal(P(1,:),P(end,:))
+if ~isequal(pos(1,:),pos(end,:)) && strcmp(conds,'periodic')
     flag = true;
-    P = [P;P(1,:)];
+    pos = [pos;pos(1,:)];
 end
 
 % t-values of control points
-t = cumsum(sqrt([0,diff(P(:,1)')].^2 + [0,diff(P(:,2)')].^2));
-
-if nargin == 1
+t = cumsum(sqrt([0,diff(pos(:,1)')].^2 + [0,diff(pos(:,2)')].^2));
+if isempty(n)
     % define number of samples based on the length of the curve so that
-    % each segment is approximately 0.5 voxels long.
+    % each segment is approximately 0.5 mm long.
     n = 2 * ceil(max(t));
 end
-
-px = csape(t,P(:,1),'periodic');
-py = csape(t,P(:,2),'periodic');
+% conds = 'variational';
+px = csape(t,pos(:,1),conds);
+py = csape(t,pos(:,2),conds);
 
 % t-values of sampled points along the curve
 ts = linspace(0,max(t),n);
@@ -54,6 +71,8 @@ if nargout > 1
         % normalize to unit vector
         N = N ./ (sqrt(sum(N.^2,2))*[1 1]);
         if flag == true
+            % Remove the last point again so that it matches with the
+            % input.
             N = N(1:end-1,:);
             t = t(1:end-1);
         end

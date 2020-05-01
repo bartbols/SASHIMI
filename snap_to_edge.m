@@ -3,7 +3,8 @@ function [newpoints,Gmag,Gdir] = snap_to_edge(img,points,varargin)
 % img     : 2D image
 % points  : n x 2 set of points or a cell array with n x 2 point sets.
 % Optional inputs (as 'argument',<value> pairs)
-% spacing : pixel spacing in mm. Default: [1 1]
+% xvec    : vector with x-coordinates of image
+% yvec    : vector with y-coordinates of image
 % maxd    : maximum distance to move points (in mm). Default: 1
 % sigma   : standard deviation of the gaussian image filter. Default: 1
 % method  : interpolation method. Default: 'linear'.
@@ -19,24 +20,30 @@ p = inputParser;
 addRequired(p,'img')
 addRequired(p,'points')
 addParameter(p,'maxd',1,@isscalar)
-addParameter(p,'spacing',[1 1])
+addParameter(p,'xvec',[]);
+addParameter(p,'yvec',[]);
 addParameter(p,'sigma',1,@(x) isscalar(x) || isempty(x))
 addParameter(p,'method','linear')
 addParameter(p,'direction','gradient')
 parse(p,img,points,varargin{:});
 
 method  = p.Results.method; % interpolation method
-spacing = p.Results.spacing;
 maxd    = p.Results.maxd;
 sigma   = p.Results.sigma;
 direction = p.Results.direction;
+xvec    = p.Results.xvec;
+yvec    = p.Results.yvec;
 
 PlotFlag = false; % Set to true for diagnostics purposes only.
 %% Crop image
 % Build up x and y-vector of image.
 imdim = size(img);
-xvec = (0.5 : imdim(2)-0.5) * spacing(2);
-yvec = (0.5 : imdim(1)-0.5) * spacing(1);
+if isempty(xvec)
+    xvec = 1 : imdim(2);    
+end
+if isempty(yvec)
+    yvec = 1 : imdim(1);    
+end
 
 flag = false;
 if isnumeric(points)
@@ -47,7 +54,6 @@ end
 
 % Crop image to location where points are. This will speed up image
 % gradient calculation.
-% Note: this will give a problem if points are near the edge of the image...
 padding = 10*maxd;
 minx = min(cellfun(@(x) min(x(:,1)),points));
 maxx = max(cellfun(@(x) max(x(:,1)),points));
@@ -63,7 +69,21 @@ if isempty(sigma)
 else
     Ifilt = imgaussfilt(img(sel_y,sel_x),sigma);
 end    
-[Gmag,Gdir] = imgradient(Ifilt);
+
+% Calculate image gradient in x and y direction, corrected for pixel size.
+[Gx,Gy] = imgradientxy(Ifilt);
+Gx = Gx / (xvec(2)-xvec(1));
+Gy = Gy / (yvec(2)-yvec(1));
+[Gmag,Gdir] = imgradient(Gx,Gy);
+
+% %% Plot gradient directions for testing purposes only.
+% figure
+% hold on
+% imagesc(xvec(sel_x),yvec(sel_y),Ifilt)
+% [X,Y] = meshgrid(xvec(sel_x),yvec(sel_y));
+% quiver(X(:),Y(:),-cosd(Gdir(:)),sind(Gdir(:)),...
+%     'AutoScale','off')
+% axis equal
 
 %%
 
@@ -81,8 +101,8 @@ for i = 1 : numel(points)
     N = NaN(size(points{i}));
     switch direction
         case 'gradient'
-            N(:,1) = interp2(xvec(sel_x),yvec(sel_y),-cosd(Gdir),points{i}(:,1),points{i}(:,2),method);
-            N(:,2) = interp2(xvec(sel_x),yvec(sel_y), sind(Gdir),points{i}(:,1),points{i}(:,2),method);
+            N(:,1) = interp2(xvec(sel_x),yvec(sel_y),-cosd(Gdir),points{i}(:,1),points{i}(:,2),method,0);
+            N(:,2) = interp2(xvec(sel_x),yvec(sel_y), sind(Gdir),points{i}(:,1),points{i}(:,2),method,0);
         case 'normal'
             [~,~,~,~,N] = fit_spline(points{i});
     end
