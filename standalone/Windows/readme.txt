@@ -1,4 +1,4 @@
-SASHIMI_v1_1 Executable
+SASHIMI_v1_1_1 Executable
 
 1. Prerequisites for Deployment 
 
@@ -24,7 +24,7 @@ in the MathWorks Documentation Center.
 
 Files to Package for Standalone 
 ================================
--SASHIMI_v1_1.exe
+-SASHIMI_v1_1_1.exe
 -MCRInstaller.exe 
     Note: if end users are unable to download the MATLAB Runtime using the
     instructions in the previous section, include it when building your 
