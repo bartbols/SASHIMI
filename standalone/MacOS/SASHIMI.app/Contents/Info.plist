@@ -9,21 +9,21 @@
 	<key>CFBundleIconFile</key>
 	<string>membrane.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>SASHIMI_Segmentation</string>
+	<string>SASHIMI</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>SASHIMI_Segmentation</string>
+	<string>SASHIMI</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.1.0</string>
+	<string>1.2.0.0</string>
 	<key>CFBundleSignature</key>
-	<string>SASHIMI_Segmentation</string>
+	<string>SASHIMI</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleVersionString</key>
-	<string>1.1.1.0</string>
+	<string>1.2.0.0</string>
 	<key>CFResourcesFileMapped</key>
 	<true/>
 	<key>LSMinimumSystemVersion</key>

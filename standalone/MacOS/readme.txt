@@ -1,4 +1,4 @@
-SASHIMI_Segmentation Executable
+SASHIMI Executable
 
 1. Prerequisites for Deployment 
 
@@ -24,11 +24,11 @@ in the MathWorks Documentation Center.
 
 Files to Package for Standalone 
 ================================
--run_SASHIMI_Segmentation.sh (shell script for temporarily setting environment variables 
- and executing the application)
+-run_SASHIMI.sh (shell script for temporarily setting environment variables and executing 
+ the application)
    -to run the shell script, type
    
-       ./run_SASHIMI_Segmentation.sh <mcr_directory> <argument_list>
+       ./run_SASHIMI.sh <mcr_directory> <argument_list>
        
     at Linux or Mac command prompt. <mcr_directory> is the directory 
     where version 9.7 of the MATLAB Runtime is installed or the directory where 
@@ -38,22 +38,22 @@ Files to Package for Standalone
     If you have version 9.7 of the MATLAB Runtime installed in 
     /mathworks/home/application/v97, run the shell script as:
     
-       ./run_SASHIMI_Segmentation.sh /mathworks/home/application/v97
+       ./run_SASHIMI.sh /mathworks/home/application/v97
        
     If you have MATLAB installed in /mathworks/devel/application/matlab, 
     run the shell script as:
     
-       ./run_SASHIMI_Segmentation.sh /mathworks/devel/application/matlab
+       ./run_SASHIMI.sh /mathworks/devel/application/matlab
 -MCRInstaller.zip 
     Note: if end users are unable to download the MATLAB Runtime using the
     instructions in the previous section, include it when building your 
     component by clicking the "Runtime included in package" link in the
     Deployment Tool.
--The Macintosh bundle directory structure SASHIMI_Segmentation.app 
+-The Macintosh bundle directory structure SASHIMI.app 
     Note: this can be stored in an archive file with the zip command 
-    zip -r SASHIMI_Segmentation.zip SASHIMI_Segmentation.app
+    zip -r SASHIMI.zip SASHIMI.app
     or the tar command 
-    tar -cvf SASHIMI_Segmentation.tar SASHIMI_Segmentation.app
+    tar -cvf SASHIMI.tar SASHIMI.app
 -This readme file 
 
 
@@ -92,7 +92,7 @@ ${DYLD_LIBRARY_PATH}:MR/v97/runtime/maci64:MR/v97/sys/os/maci64:MR/v97/bin/maci6
         NOTE: The environment variable syntax utilizes forward 
               slashes (/), delimited by colons (:).  
         NOTE: When deploying standalone applications, you can
-              run the shell script file run_SASHIMI_Segmentation.sh 
+              run the shell script file run_SASHIMI.sh 
               instead of setting environment variables. See 
               section 2 "Files to Deploy and Package".    
 

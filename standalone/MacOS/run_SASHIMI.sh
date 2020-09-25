@@ -26,7 +26,7 @@ else
       args="${args} \"${token}\"" 
       shift
   done
-  eval "\"${exe_dir}/SASHIMI_Segmentation.app/Contents/MacOS/SASHIMI_Segmentation\"" $args
+  eval "\"${exe_dir}/SASHIMI.app/Contents/MacOS/SASHIMI\"" $args
 fi
 exit
 
