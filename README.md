@@ -1,17 +1,17 @@
-# SASHIMI
+# *SASHIMI*
 SASHIMI Segmentation is a MATLAB App for segmentation of multi-slice images.
 
-SASHIMI Segmentation stands for
+<img src="sashimi-logo.png" alt="SASHIMI-logo"
+	title="SASHIMI" width="100%"/>
+SASHIMI stands for
 
-  Semi-
-  Automated
-  Supervised
-  Human-
-  Interactive
-  Multislice
-  Image
-
-SEGMENTATION
+  *S*emi-
+  *A*utomated
+  *S*upervised
+  *H*uman-
+  *I*nteractive
+  *M*ultislice
+  *I*mage Segmentation
 
   SASHIMI was built with the App Designer in Matlab 2019b.
   The following toolboxes are required:
